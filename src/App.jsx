@@ -217,7 +217,7 @@ function App() {
                 </div>
 
                 <div className="pt-4 border-t border-border">
-                  <label className="block text-xs uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
+                  <label className="text-xs uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
                     <Lock className="w-3 h-3" /> Obfuscation
                   </label>
                   <select
