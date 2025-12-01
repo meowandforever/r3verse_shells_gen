@@ -12,6 +12,19 @@ function App() {
   const [obfuscation, setObfuscation] = useState('none');
   const [selectedTag, setSelectedTag] = useState('all');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
+
+  const handleAgree = () => {
+    setShowDisclaimer(false);
+    localStorage.setItem('safespace_agreed', 'true');
+  };
+
+  useEffect(() => {
+    const agreed = localStorage.getItem('safespace_agreed');
+    if (agreed) {
+      setShowDisclaimer(false);
+    }
+  }, []);
 
   // Extract unique tags and languages
   const allTags = ['all', ...new Set(shells.flatMap(s => s.tags || []))].sort();
@@ -82,7 +95,50 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-text selection:bg-primary selection:text-background font-mono overflow-hidden relative">
       {/* Background Matrix Effect (Simplified) */}
+      {/* Background Matrix Effect (Simplified) */}
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(rgba(0,255,65,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.05)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+
+      <AnimatePresence>
+        {showDisclaimer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <div className="bg-surface border border-primary/50 p-8 rounded-lg max-w-md w-full shadow-[0_0_50px_rgba(0,255,65,0.2)] text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse"></div>
+
+              <Shield className="w-16 h-16 text-primary mx-auto mb-6 animate-pulse-slow" />
+
+              <h2 className="text-2xl font-bold text-white mb-2 tracking-tighter">
+                SECURITY PROTOCOL <span className="text-primary">INITIATED</span>
+              </h2>
+
+              <div className="text-left text-sm text-muted space-y-4 mb-8 bg-background/50 p-4 rounded border border-border">
+                <p className="text-primary font-bold">WARNING: AUTHORIZED PERSONNEL ONLY</p>
+                <p>
+                  This tool is designed for <strong>educational purposes</strong> and <strong>authorized security testing</strong> only.
+                </p>
+                <p>
+                  By accessing this system, you agree that you will not use generated payloads for malicious purposes or on systems you do not have explicit permission to test.
+                </p>
+                <p className="text-xs uppercase tracking-widest opacity-70">
+                  The developers assume no liability for misuse.
+                </p>
+              </div>
+
+              <button
+                onClick={handleAgree}
+                className="w-full py-3 bg-primary/10 border border-primary text-primary hover:bg-primary hover:text-background font-bold tracking-widest transition-all rounded uppercase flex items-center justify-center gap-2 group"
+              >
+                <Check className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                I Agree & Enter
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="container mx-auto p-6 relative z-10 max-w-7xl">
         <header className="mb-8 flex items-center justify-between border-b border-border pb-4">

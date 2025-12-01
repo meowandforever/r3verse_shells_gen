@@ -1,5 +1,10 @@
 # SAFESPACE Reverse Shell Generator (Enterprise Edition)
 
+> [!WARNING]
+> **LEGAL DISCLAIMER**: This tool is strictly for **educational purposes** and **authorized security testing** (Penetration Testing / Red Teaming).
+>
+> **DO NOT** use this tool on systems you do not own or have explicit permission to test. Misuse of this software violates international laws. The developers assume **NO LIABILITY** for any damage caused by this tool.
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![React](https://img.shields.io/badge/react-18.x-61DAFB.svg)
