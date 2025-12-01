@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { shells, generatePayload } from './data/shells';
-import { Copy, Terminal, Shield, Wifi, Server, Check, Lock, Filter, Zap, Code } from 'lucide-react';
+import { Copy, Terminal, Shield, Wifi, Server, Check, Lock, Filter, Zap, Code, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -29,6 +29,54 @@ function App() {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const getListenerCommand = (shell, port) => {
+    if (!shell) return `nc -lvnp ${port}`;
+
+    // Check tags for specific listeners
+    if (shell.tags?.includes('encrypted') || shell.tags?.includes('ssl') || shell.tags?.includes('tls')) {
+      return `ncat --ssl -lvnp ${port}`;
+    }
+    if (shell.tags?.includes('socat')) {
+      return `socat file:\`tty\`,raw,echo=0 tcp-listen:${port}`;
+    }
+    if (shell.tags?.includes('powercat')) {
+      return `powercat -l -p ${port}`;
+    }
+    if (shell.tags?.includes('metasploit')) {
+      return `msfconsole -x "use exploit/multi/handler; set PAYLOAD ${shell.os}/${shell.language}/reverse_tcp; set LHOST 0.0.0.0; set LPORT ${port}; run"`;
+    }
+
+    return `nc -lvnp ${port}`;
+  };
+
+  const handleDownload = (payload, shell) => {
+    const blob = new Blob([payload], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    // Determine extension
+    let ext = 'txt';
+    if (shell.language === 'bash') ext = 'sh';
+    if (shell.language === 'powershell') ext = 'ps1';
+    if (shell.language === 'python') ext = 'py';
+    if (shell.language === 'php') ext = 'php';
+    if (shell.language === 'ruby') ext = 'rb';
+    if (shell.language === 'perl') ext = 'pl';
+    if (shell.language === 'go') ext = 'go';
+    if (shell.language === 'java') ext = 'java';
+    if (shell.language === 'c') ext = 'c';
+    if (shell.language === 'cpp') ext = 'cpp';
+    if (shell.language === 'csharp') ext = 'cs';
+    if (shell.language === 'lua') ext = 'lua';
+
+    a.href = url;
+    a.download = `payload_${shell.id}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -102,8 +150,8 @@ function App() {
                         key={os}
                         onClick={() => setSelectedOs(os)}
                         className={`flex-1 py-2 px-4 rounded border capitalize transition-all ${selectedOs === os
-                            ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_rgba(0,255,65,0.2)]'
-                            : 'bg-background border-border text-muted hover:border-muted'
+                          ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_rgba(0,255,65,0.2)]'
+                          : 'bg-background border-border text-muted hover:border-muted'
                           }`}
                       >
                         {os}
@@ -125,6 +173,8 @@ function App() {
                     <option value="base64">Base64 Encoded</option>
                     <option value="url">URL Encoded</option>
                     <option value="hex">Hex Encoded</option>
+                    <option value="reverse">Reverse String (Bypass)</option>
+                    <option value="random_vars">Random Variables (Poly)</option>
                   </select>
                 </div>
               </div>
@@ -135,10 +185,13 @@ function App() {
               <h2 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">Listener Command</h2>
               <div className="relative group">
                 <div className="bg-background p-3 rounded border border-border font-mono text-sm text-muted break-all">
-                  nc -lvnp {port}
+                  {/* Dynamic Listener based on first visible shell or default */}
+                  {filteredShells.length > 0
+                    ? getListenerCommand(filteredShells[0], port)
+                    : `nc -lvnp ${port}`}
                 </div>
                 <button
-                  onClick={() => handleCopy(`nc -lvnp ${port}`, 'listener')}
+                  onClick={() => handleCopy(filteredShells.length > 0 ? getListenerCommand(filteredShells[0], port) : `nc -lvnp ${port}`, 'listener')}
                   className="absolute top-2 right-2 p-1.5 bg-surface border border-border rounded hover:border-primary hover:text-primary transition-colors"
                 >
                   {copiedId === 'listener' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -222,10 +275,18 @@ function App() {
                           ))}
                         </div>
                         <button
+                          onClick={() => handleDownload(payload, shell)}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium bg-background border border-border hover:border-accent hover:text-accent transition-all mr-2"
+                          title="Download Payload"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span className="hidden sm:inline">SAVE</span>
+                        </button>
+                        <button
                           onClick={() => handleCopy(payload, shell.id)}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-all ${copiedId === shell.id
-                              ? 'bg-primary text-background'
-                              : 'bg-background border border-border hover:border-primary hover:text-primary'
+                            ? 'bg-primary text-background'
+                            : 'bg-background border border-border hover:border-primary hover:text-primary'
                             }`}
                         >
                           {copiedId === shell.id ? (
